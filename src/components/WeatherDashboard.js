@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CircularProgress, Card, Typography, CardContent } from '@mui/material';
+import { CircularProgress, Card, Typography, CardContent, Box, Grid } from '@mui/material';
 
 const WeatherDashboard = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [cacheTimestamp, setCacheTimestamp] = useState(null);
 
     const fetchWeatherData = async (latitude, longitude) => {
         const cacheKey = `weatherData-${latitude}-${longitude}`;
         const cachedData = localStorage.getItem(cacheKey);
-        const cacheTime = 10; // Cache duration in minutes
+        const cacheTime = 10 * 60 * 1000; // Cache duration in milliseconds (10 minutes)
 
         if (cachedData) {
             const { data, timestamp } = JSON.parse(cachedData);
-            const age = (Date.now() - timestamp) / 60000; // Convert from ms to minutes
+            const age = Date.now() - timestamp;
             if (age < cacheTime) {
                 setWeatherData(data);
+                setCacheTimestamp(timestamp);
                 setLoading(false);
                 return; // Use cached data
             }
@@ -26,12 +28,10 @@ const WeatherDashboard = () => {
             const apiKey = process.env.REACT_APP_OPENWEATHER_API_KEY; // Use environment variable for API key
             const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
             const response = await axios.get(url);
-            const dataToCache = {
-                data: response.data,
-                timestamp: Date.now()
-            };
+            const dataToCache = { data: response.data, timestamp: Date.now() };
             localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
             setWeatherData(response.data);
+            setCacheTimestamp(Date.now());
         } catch (err) {
             setError(err.message);
         } finally {
@@ -41,7 +41,29 @@ const WeatherDashboard = () => {
 
     const isFlightSuitable = () => {
         if (!weatherData) return false;
-        return weatherData.wind.speed < 10 && !weatherData.rain;
+        const { wind, rain, snow, clouds, visibility, weather } = weatherData;
+        return (
+            wind.speed < 10 &&
+            (!rain || rain['1h'] === 0) &&
+            (!snow || snow['1h'] === 0) &&
+            clouds.all < 75 &&
+            visibility > 4000 &&
+
+            // Additional conditions
+            weather[0].main !== 'Thunderstorm' &&
+            weather[0].main !== 'Drizzle' &&
+            weather[0].main !== 'Rain' &&
+            weather[0].main !== 'Snow' &&
+            weather[0].main !== 'Mist' &&
+            weather[0].main !== 'Smoke' &&
+            weather[0].main !== 'Haze' &&
+            weather[0].main !== 'Dust' &&
+            weather[0].main !== 'Fog' &&
+            weather[0].main !== 'Sand' &&
+            weather[0].main !== 'Ash' &&
+            weather[0].main !== 'Squall' &&
+            weather[0].main !== 'Tornado'
+        );
     };
 
     useEffect(() => {
@@ -63,38 +85,68 @@ const WeatherDashboard = () => {
         }
     }, []);
 
+    const WeatherCard = ({ title, value, unit }) => (
+        <Grid item xs={12} sm={6} md={4} lg={3}>
+            <Card raised>
+                <CardContent>
+                    <Typography color="textSecondary">{title}</Typography>
+                    <Typography variant="h6">{value} {unit}</Typography>
+                </CardContent>
+            </Card>
+        </Grid>
+    );
+
+    const windspeedinkmh = (speed) => {
+        return speed * 3.6;
+    }
+
     return (
-        <div>
-            {loading ? (
-                <CircularProgress />
-            ) : error ? (
-                <Typography variant="body1" color="error">{`Error: ${error}`}</Typography>
-            ) : (
-                <Card>
-                    <CardContent>
-                        <Typography variant="h5">Current Weather</Typography>
-                        <Typography variant="body1">Temperature: {weatherData?.main?.temp}°C</Typography>
-                        <Typography variant="body1">Wind Speed: {weatherData?.wind?.speed} m/s</Typography>
-                        <Typography variant="body1">Humidity: {weatherData?.main?.humidity}%</Typography>
-                        <Typography variant="body1">Description: {weatherData?.weather[0]?.description}</Typography>
-                        <Typography variant="body1">Rain: {weatherData?.rain ? 'Yes' : 'No'}</Typography>
-                        <Typography variant="body1">Cloudiness: {weatherData?.clouds?.all}%</Typography>
-                        <Typography variant="body1">Pressure: {weatherData?.main?.pressure} hPa</Typography>
-                        <Typography variant="body1">Visibility: {weatherData?.visibility / 1000} km</Typography>
-                        <Typography variant="body1">Sunrise: {new Date(weatherData?.sys?.sunrise * 1000).toLocaleTimeString()}</Typography>
-                        <Typography variant="body1">Sunset: {new Date(weatherData?.sys?.sunset * 1000).toLocaleTimeString()}</Typography>
-                        <Typography variant="body1">Location: {weatherData?.name}</Typography>
-                        <Typography variant="body1">Coordinates: {weatherData?.coord?.lat}, {weatherData?.coord?.lon}</Typography>
-                        <Typography variant="body1">Timezone: GMT {weatherData?.timezone / 3600}</Typography>
-                        <Typography variant="body1">Weather Data Last Updated: {new Date(weatherData?.dt * 1000).toLocaleString()}</Typography>
-                        <br />
-                        <Typography variant="h6" style={{ color: isFlightSuitable() ? 'green' : 'red' }}>
-                            {isFlightSuitable() ? 'Suitable for flying' : 'Not suitable for flying'}
-                        </Typography>
-                    </CardContent>
-                </Card>
-            )}
-        </div>
+        <Box sx={{ flexGrow: 1, padding: 3 }}>
+            <Grid container spacing={2} justifyContent="center">
+                {loading ? (
+                    <CircularProgress />
+                ) : error ? (
+                    <Typography variant="body1" color="error">{`Error: ${error}`}</Typography>
+                ) : (
+                    <>
+                        <Grid item xs={12}>
+                            <Card raised sx={{ backgroundColor: isFlightSuitable() ? '#C8E6C9' : '#FFCDD2' }}>
+                                <CardContent>
+                                    <Typography variant="h4" align="center">
+                                        {isFlightSuitable() ? 'Good to Fly!' : 'Not Suitable for Flying'}
+                                    </Typography>
+                                    {!isFlightSuitable() && (
+                                        <Typography variant="subtitle1" align="center" sx={{ mt: 2 }}>
+                                            Check weather conditions: wind speed, precipitation, visibility, and temperature.
+                                        </Typography>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        <WeatherCard title="Description" value={weatherData?.weather[0]?.description} />
+                        <WeatherCard title="Temperature" value={weatherData?.main?.temp} unit="°C" />
+                        <WeatherCard title="Feels Like" value={weatherData?.main?.feels_like} unit="°C" />
+                        <WeatherCard title="Wind Speed" value={windspeedinkmh(weatherData?.wind?.speed).toFixed(2)} unit="km/h" />
+                        <WeatherCard title="Wind Direction" value={weatherData?.wind?.deg} unit="°" />
+                        <WeatherCard title="Wind Gust" value={windspeedinkmh(weatherData?.wind?.gust).toFixed(2)} unit="km/h" />
+                        <WeatherCard title="Humidity" value={weatherData?.main?.humidity} unit="%" />
+                        <WeatherCard title="Precipitation" value={weatherData?.rain?.['1h'] || 0} unit="mm" />
+                        <WeatherCard title="Precipation Probability" value={weatherData?.hourly?.[0]?.pop * 100} unit="%" />
+                        <WeatherCard title="Rain" value={weatherData?.rain ? 'Yes' : 'No'} />
+                        <WeatherCard title="Snow" value={weatherData?.snow ? 'Yes' : 'No'} />
+                        <WeatherCard title="Cloudiness" value={weatherData?.clouds?.all} unit="%" />
+                        <WeatherCard title="Pressure" value={weatherData?.main?.pressure} unit="hPa" />
+                        <WeatherCard title="Visibility" value={weatherData?.visibility / 1000} unit="km" />
+                        <WeatherCard title="Sunrise" value={new Date(weatherData?.sys?.sunrise * 1000).toLocaleTimeString()} />
+                        <WeatherCard title="Sunset" value={new Date(weatherData?.sys?.sunset * 1000).toLocaleTimeString()} />
+                        <WeatherCard title="City" value={weatherData?.name} />
+                        <WeatherCard title="Coordinates" value={`${weatherData?.coord?.lat}, ${weatherData?.coord?.lon}`} />
+                        <WeatherCard title="Timezone" value={`GMT ${weatherData?.timezone / 3600}`} />
+                        <WeatherCard title="Last Updated" value={cacheTimestamp ? new Date(cacheTimestamp).toLocaleString() : 'Unknown'} />
+                    </>
+                )}
+            </Grid>
+        </Box>
     );
 }
 
