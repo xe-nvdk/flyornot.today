@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CircularProgress, Card, Typography, CardContent, Box, Grid } from '@mui/material';
+import { Helmet } from 'react-helmet';
 
 const WeatherDashboard = () => {
     const [weatherData, setWeatherData] = useState(null);
@@ -102,6 +103,22 @@ const WeatherDashboard = () => {
 
     return (
         <Box sx={{ flexGrow: 1, padding: 3 }}>
+            <Helmet>
+                {/* Title */}
+                <title>Can you fly your drone today? - FlyOrNot</title>
+
+                {/* Meta tags for SEO */}
+                <meta name="description" content="Get real-time weather data for your location to make informed decisions about outdoor activities, including flying drones. Created by Ignacio Van Droogenbroeck." />
+                <meta name="keywords" content="weather dashboard, real-time weather, outdoor activities, drones, flying, Ignacio Van Droogenbroeck" />
+
+                {/* Open Graph meta tags for social sharing */}
+                <meta property="og:title" content="Can you fly your drone today? - FlyOrNot" />
+                <meta property="og:description" content="Get real-time weather data for your location to make informed decisions about outdoor activities, including flying drones. Created by Ignacio Van Droogenbroeck." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://flyornot.today" />
+                <meta property="og:image" content="https://flyornot.today/flyornot.webp" />
+                <meta property="og:image:alt" content="FlyOrNot Weather Dashboard" />
+            </Helmet>
             <Grid container spacing={2} justifyContent="center">
                 {loading ? (
                     <CircularProgress />

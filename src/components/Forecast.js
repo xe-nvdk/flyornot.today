@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CircularProgress, Card, Typography, CardContent, Grid, Paper, Box } from '@mui/material';
+import { Helmet } from 'react-helmet';
 
 const Forecast = () => {
     const [forecastData, setForecastData] = useState(null);
@@ -75,6 +76,22 @@ const Forecast = () => {
 
     return (
         <Box sx={{ flexGrow: 1, padding: 3 }}>
+            <Helmet>
+                {/* Title */}
+                <title>5-Day Forecast - FlyOrNot</title>
+
+                {/* Meta tags for SEO */}
+                <meta name="description" content="Get the 5-day forecast for your location and make informed decisions about outdoor activities. Created by Ignacio Van Droogenbroeck." />
+                <meta name="keywords" content="forecast, 5-day forecast, weather, outdoor activities, drones, flying, Ignacio Van Droogenbroeck" />
+
+                {/* Open Graph meta tags for social sharing */}
+                <meta property="og:title" content="5-Day Forecast - FlyOrNot" />
+                <meta property="og:description" content="Get the 5-day forecast for your location and make informed decisions about outdoor activities. Created by Ignacio Van Droogenbroeck." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://flyornot.today/forecast" />
+                <meta property="og:image" content="https://flyornot.today/flyornot.webp" />
+                <meta property="og:image:alt" content="FlyOrNot Forecast" />
+            </Helmet>
             {loading ? (
                 <CircularProgress />
             ) : error ? (
