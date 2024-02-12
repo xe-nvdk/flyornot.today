@@ -30,8 +30,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-FlyOrNot Weather Dashboard was created by [Your Name] as a project for providing real-time weather data to users. It utilizes the OpenWeather API for fetching weather information.
+FlyOrNot Weather Dashboard was created by Ignacio Van Droogenbroeck as a project for providing real-time weather data to users. It utilizes the OpenWeather API for fetching weather information.
 
 ## Contact
 
 If you have any questions or suggestions about FlyOrNot Weather Dashboard, feel free to contact me at ignacio[at]drone-analytics.io.
+
+## Disclaimer
+
+The information provided by this application is for general informational purposes only. While we strive to keep the information up to date and accurate, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability concerning the application or the information, products, services, or related graphics contained in the application for any purpose. Any reliance you place on such information is therefore strictly at your own risk.
+
+In no event will we be liable for any loss or damage including without limitation, indirect or consequential loss or damage, or any loss or damage arising from loss of data or profits arising out of, or in connection with, the use of this application.
+
+Through this application, you can link to other applications and websites that are not under our control. We have no control over the nature, content, and availability of those sites. The inclusion of any links does not necessarily imply a recommendation or endorse the views expressed within them.
+
+Every effort is made to keep the application up and running smoothly. However, we take no responsibility for, and will not be liable for, the application being temporarily unavailable due to technical issues beyond our control.
